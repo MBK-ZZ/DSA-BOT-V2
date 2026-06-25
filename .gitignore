@@ -1,3 +1,4 @@
 node_modules/
 .env
 tickets-data.json
+transcripts/

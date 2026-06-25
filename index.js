@@ -15,10 +15,12 @@ import {
   handleTicketInteraction,
   deployTicketPanel,
 } from "./tickets.js";
+import { TICKET, ticketConfigOk, missingTicketConfig } from "./config.js";
+import { startTranscriptServer } from "./server.js";
 
 const TOKEN = process.env.DISCORD_TOKEN;
 if (!TOKEN) {
-  console.error("Missing DISCORD_TOKEN in .env");
+  console.error("Missing DISCORD_TOKEN. Add it in Railway Variables or in your local .env file.");
   process.exit(1);
 }
 
@@ -54,6 +56,16 @@ client.once("ready", async () => {
   console.log(`Bot online: ${client.user.tag}`);
   console.log("Listening for messages, voice joins, and tickets...");
 
+  if (!ticketConfigOk()) {
+    console.warn(
+      "Ticket system disabled — missing:",
+      missingTicketConfig().join(", ")
+    );
+    console.warn("Add them in Railway Variables or .env, then redeploy.");
+  } else {
+    console.log("Ticket system enabled.");
+  }
+
   try {
     const rest = new REST({ version: "10" }).setToken(TOKEN);
     await rest.put(Routes.applicationCommands(client.user.id), { body: slashCommands });
@@ -62,8 +74,8 @@ client.once("ready", async () => {
     console.error("Failed to register slash commands:", e);
   }
 
-  const panelChannelId = process.env.TICKET_PANEL_CHANNEL_ID;
-  if (panelChannelId) {
+  const panelChannelId = TICKET.panelChannelId;
+  if (panelChannelId && ticketConfigOk()) {
     const ch = await client.channels.fetch(panelChannelId).catch(() => null);
     if (ch?.isTextBased()) {
       const recent = await ch.messages.fetch({ limit: 10 }).catch(() => null);
@@ -280,3 +292,4 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.login(TOKEN);
+startTranscriptServer();

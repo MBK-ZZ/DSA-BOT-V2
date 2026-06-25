@@ -17,8 +17,6 @@ import {
 
 const DATA_FILE = "tickets-data.json";
 
-export const WAITING_SUPPORT_VC = "1509551318358950052";
-
 export const TICKET_TYPES = {
   tech: { emoji: "🖥️", label: "Technical Support | الدعم الفني" },
   high: { emoji: "🛡️", label: "High Management | الإدارة العليا" },
